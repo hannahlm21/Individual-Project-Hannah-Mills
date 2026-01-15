@@ -18,3 +18,8 @@ movies |>
 ggplot(movies, aes(x= year)) + 
   geom_bar()
 
+ggplot(movies, aes(x= year)) + 
+  geom_histogram()
+
+
+

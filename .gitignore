@@ -47,3 +47,8 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Renv Ignore Stuff
+/renv/library/
+/renv/python/
+/renv/staging/
