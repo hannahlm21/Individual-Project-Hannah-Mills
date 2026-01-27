@@ -1,0 +1,62 @@
+---
+title: "Cinematic Representation: The Bechdel Test"
+author: "Hannah Mills"
+format: 
+  revealjs:
+    theme: sky
+    transition: slide
+    scrollable: true
+    code-fold: true
+---
+
+## Data Preparation & Cleaning
+
+-   **Dataset:** 1,794 movies (1970–2013)
+
+-   **Inflation Adjustment:** Normalized all financials to 2013 dollars.
+
+-   **Data Cleaning:**
+
+    -   Resolved HTML encoding (e.g., `&amp;` to `&`).
+    -   Handled 11% missing genre metadata by labeling as "Uncategorized."
+    -   Filtered out records missing ROI data for financial modeling.
+
+## Representation by Genre
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+
+library(shiny)
+library(tidyverse)
+library(plotly)
+library(bslib)
+library(scales)
+
+movies <- read_csv("movies.csv") |> 
+  mutate(
+    domgross_2013 = as.numeric(domgross_2013),
+    budget_2013 = as.numeric(budget_2013),
+    roi = (domgross_2013 - budget_2013) / budget_2013,
+    binary = factor(binary, levels = c("PASS", "FAIL"))) |> 
+  filter(!is.na(roi))
+
+genre_analysis <- movies |> 
+  separate_rows(genre, sep = ", ") |> 
+  group_by(genre) |> 
+  summarize(
+    total_movies = n(),
+    pass_rate = mean(binary == "PASS")
+    ) |> 
+  filter(total_movies > 20)
+
+ggplot(genre_analysis, aes(x=reorder(genre, pass_rate), y = pass_rate, fill = pass_rate)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+  x = "Genre",
+  y = "Pass Rate",
+  title = "Genre and Pass Rate")
+```
