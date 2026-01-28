@@ -38,8 +38,8 @@ server <- function(input, output, session) {
       sort()
     
     updateSelectInput(session, "genre_pick", 
-                     choices = c("All", available_genres),
-                     selected = input$genre_pick)
+    choices = c("All", available_genres),
+    selected = input$genre_pick)
   })
 
   plot_data <- reactive({
