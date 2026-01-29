@@ -122,7 +122,7 @@ box_plot <- ggplot(movies, aes(x = binary, y = roi, fill = binary, text = title)
   scale_fill_manual(values = c("PASS" = "#379c09ff", "FAIL" = "#cb1c08ff")) +
   geom_jitter(alpha = 0.3, width = 0.2) +
   coord_cartesian(ylim = c(-1, 20)) +
-  labs(title = "ROI Distribution by Bechdel Status", y = "Return on Investment (percentage)", x = "Bechdel Result")
+  labs(title = "ROI Distribution by Bechdel Status", y = "Return on Investment", x = "Bechdel Result")
 
 ggplotly(box_plot, tooltip = "text")
 ```
@@ -158,6 +158,9 @@ ggplotly(scatter_plot, tooltip = "text")
 
 [Click here to open in a new tab](https://019c0340-15f9-c66a-187e-0261b274062f.share.connect.posit.cloud){target="_blank"}
 
+## Shiny Dashboard (Image)
+
+![Shiny Dashboard](images/Dashboard.png)
 
 ## Future Outlook / Conclusion
 
