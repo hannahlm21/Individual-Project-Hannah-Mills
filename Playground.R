@@ -128,9 +128,9 @@ p <- ggplot(movies, aes(x = year, y = budget_2013,
   scale_y_log10(labels = scales::label_comma()) +
   theme_minimal() +
   labs(title = "The Evolution of Big-Budget Cinema",
-       x = "Year", y = "Budget (Log Scale)")
+    x = "Year", y = "Budget (Log Scale)")
 
-ggplotly(p, tooltip = "text") %>% toWebGL()
+ggplotly(p, tooltip = "text") |> toWebGL()
 
 # Simple version using clean_test categories
 plot_ly(
@@ -141,10 +141,10 @@ plot_ly(
 )
 
 # Create decade bins
-movies_decade <- movies %>%
-  mutate(decade = floor(year / 10) * 10) %>%
-  separate_rows(genre, sep = ", ") %>%
-  group_by(decade, genre) %>%
+movies_decade <- movies |> 
+  mutate(decade = floor(year / 10) * 10) |> 
+  separate_rows(genre, sep = ", ") |> 
+  group_by(decade, genre) |> 
   summarise(pass_rate = mean(binary == "PASS"), .groups = "drop")
 
 p <- ggplot(movies_decade, aes(x = decade, y = genre, fill = pass_rate)) +
@@ -189,3 +189,20 @@ p <- ggplot(genre_analysis, aes(x=reorder(genre, pass_rate), y = pass_rate, fill
        x = "Genre", y = "Number of Movies") +
   scale_y_continuous(labels = scales::percent)
 ggplotly(p, tooltip = "text")
+
+genre_analysis <- movies |> 
+  separate_rows(genre, sep = ", ") |> 
+  group_by(genre) |> 
+  summarize(
+    total_movies = n(),
+    pass_rate = mean(binary == "PASS")
+    ) |> 
+  filter(total_movies > 20)
+
+genre_analysis |> glimpse()
+
+ggplot(genre_analysis, aes(x=reorder(genre, total_movies), y = total_movies)) +
+  geom_col() +
+  coord_flip()
+
+view(genre_analysis)

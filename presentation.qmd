@@ -3,6 +3,7 @@ title: "Cinematic Representation: The Bechdel Test"
 author: "Hannah Mills"
 format: 
   revealjs:
+    embed-resources: false
     theme: solarized
     transition: slide
     scrollable: true
@@ -11,7 +12,7 @@ format:
 
 ## Background / Context
 
-**The Bechdel Test:** The Bechdel test was inspired by a 1985 comic strip written by Alison Bechdel stating that a movie must pass three criteria
+**The Bechdel Test:** The Bechdel test was first mentioned in a comic strip released in 1985, written by Alison Bechdel. It is a simple way to gauge female representation and depth in movies, where a movie must satisy three criteria.
 
 **Three Criteria:**
 
@@ -31,9 +32,9 @@ To explore the relationship between films that pass (or fail) the Bechdel test, 
 -   Created a column that calculated return on investment
     -   ROI = (2013 Normalized Domestic Gross - 2013 Normalized Budget) / 2013 Normalized Budget
 -   Converted the pass and fail column to binary set of values (categorized)
-- Dropped any genres with less than 20 movies (eventually)
+- Dropped any genres with less than 20 movies
 
-## Bechdel Test Results With Plotly Graphs
+## Bechdel Test Results With Plotly Graphs: EDA
 
 ```{r}
 #| echo: true
@@ -55,13 +56,13 @@ movies <- read_csv("movies.csv") |>
     binary = factor(binary, levels = c("PASS", "FAIL"))) |> 
   filter(!is.na(roi))
 
-p <- ggplot(movies, aes(x = clean_test, fill = binary)) +
+bar_chart <- ggplot(movies, aes(x = clean_test, fill = binary)) +
   geom_bar() +
     scale_fill_manual(values = c("PASS" = "#379c09ff", "FAIL" = "#cb1c08ff")) +
   theme_minimal() +
   labs(title = "Breakdown of Bechdel Test Results",
        x = "Detailed Result", y = "Number of Movies")
-ggplotly(p, tooltip = "text")
+ggplotly(bar_chart, tooltip = "text")
 ```
 
 -   **Men:** The two women talk about men
@@ -90,6 +91,32 @@ ggplotly(histogram)
 #| message: false
 #| warning: false
 
+genre_analysis <- movies |> 
+  separate_rows(genre, sep = ", ") |> 
+  group_by(genre) |> 
+  summarize(
+    total_movies = n(),
+    pass_rate = mean(binary == "PASS")
+    ) |> 
+  filter(total_movies > 20) #this dropped documentary and western (western was the lowest and documentary was above war)
+
+genre_graph <- ggplot(genre_analysis, aes(x=reorder(genre, pass_rate), y = pass_rate, fill = pass_rate)) +
+  geom_col() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Genre Analysis",
+  x = "Genre", y = "Pass Rate") +
+  scale_y_continuous(labels = scales::percent)
+ggplotly(genre_graph, tooltip = "text")
+```
+
+## Bechdel Test Results With Plotly Graphs: Results
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+
 box_plot <- ggplot(movies, aes(x = binary, y = roi, fill = binary, text = title)) +
   geom_boxplot(outlier.shape = NA) +
   scale_fill_manual(values = c("PASS" = "#379c09ff", "FAIL" = "#cb1c08ff")) +
@@ -105,24 +132,21 @@ ggplotly(box_plot, tooltip = "text")
 #| message: false
 #| warning: false
 
-genre_analysis <- movies |> 
-  separate_rows(genre, sep = ", ") |> 
-  group_by(genre) |> 
-  summarize(
-    total_movies = n(),
-    pass_rate = mean(binary == "PASS")
-    ) |> 
-  filter(total_movies > 20)
+scatter_plot <- ggplot(movies, aes(x = budget_2013, y = domgross_2013, color = binary, text = paste("Movie:", title))) +
+  geom_jitter(size = 0.5, alpha = 0.5) +
+  scale_color_manual(values = c("PASS" = "#379c09ff", "FAIL" = "#cb1c08ff")) +
+  scale_x_log10(labels = scales::label_comma()) +
+  scale_y_log10(labels = scales::label_comma()) +
+  labs(
+    x = "Budget (log)",
+    y = "Domestic Gross (log)",
+    title = "Budget and Domestic Gross"
+  ) +
+  theme_minimal()
 
-genre_graph <- ggplot(genre_analysis, aes(x=reorder(genre, pass_rate), y = pass_rate, fill = pass_rate)) +
-  geom_col() +
-  coord_flip() +
-  theme_minimal() +
-  labs(title = "Genre Analysis",
-  x = "Genre", y = "Pass Rate") +
-  scale_y_continuous(labels = scales::percent)
-ggplotly(genre_graph, tooltip = "text")
+ggplotly(scatter_plot, tooltip = "text")
 ```
+
 
 ## Shiny Dashboard
 
@@ -147,7 +171,9 @@ ggplotly(genre_graph, tooltip = "text")
 
 - Disproves claim that movies with significant female leads perform worse at the domestic box office
 
-- Films that pass the Bechdel test have a greater median ROI
+- Films that pass the Bechdel test also have a greater median ROI
+
+- Disclaimer
 
 ## Thank you! Questions?
 
